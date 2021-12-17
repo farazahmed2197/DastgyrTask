@@ -70,7 +70,7 @@ export const AddInventory = () => {
           <InputNumber />
         </Form.Item>
         <Form.Item label="Type" name="type" rules={[{ required: true }]}>
-          <Select>
+          <Select placeholder="System can decide the In/Out type based on selected reason type">
             <Select.Option value="purchase">Purchase</Select.Option>
             <Select.Option value="sales">Sales</Select.Option>
             <Select.Option value="damage">Damage</Select.Option>
