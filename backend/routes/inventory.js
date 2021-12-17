@@ -11,7 +11,7 @@ router.post("/add", async (req, res) => {
     // validation of input
     const validation = Validation.inventoryValidate(req.body);
     if (validation.length > 0)
-      return res.status(400).json({ error: validation });
+      return res.status(400).json({ error: validation , message: "Validation error"});
 
     // if product doesn't exist then create one
     let product = await Product.findOne({
@@ -19,21 +19,26 @@ router.post("/add", async (req, res) => {
         SKU: req.body.sku,
       },
     });
-    
+
     // if product doesn't exists then add it
     if (!product) await addProduct(req.body);
     const type = getType(req.body.type);
-    
+
     // validation for quantity check
+    let skuInventory = await getInventoryBySKU({
+      field: "sku",
+      value: req.body.sku,
+    });
     if (
       type == "out" &&
-      (await getInventoryBySKU({ field: "sku", value: req.body.sku }))[0].total
-      <
-        req.body.quantity
+      (skuInventory.length == 0 || skuInventory[0].total < req.body.quantity)
     )
       return res
         .status(300)
-        .json({ error: "Inventory of requested product is out of stock" });
+        .json({
+          error: true,
+          message: "Inventory of requested product is out of stock",
+        });
 
     const newInventory = await Inventory.create({
       SKU: req.body.sku,
@@ -50,7 +55,8 @@ router.post("/add", async (req, res) => {
     });
   } catch (error) {
     return res.status(401).json({
-      error: error.message,
+      error: true,
+      message: error.message,
       data: null,
       status: false,
     });
@@ -63,8 +69,10 @@ router.get("/get", async (req, res) => {
     let allInventories = await Inventory.findAll();
     // fetch all records of each SKUs
     await response.forEach(async (inventory) => {
-      inventory.allRecords = await allInventories.filter((element) => element.SKU == inventory.SKU)
-    })
+      inventory.allRecords = await allInventories.filter(
+        (element) => element.SKU == inventory.SKU
+      );
+    });
     return res.status(200).json(response);
   } catch (error) {
     return res.status(402).json({
@@ -120,11 +128,11 @@ const getInventoryBySKU = async (data) => {
 
   let responseIn = await getInventory(inQuery);
   let responseOut = await getInventory(outQuery);
-
+  
   let response = [];
   // compare the in and out inventories
   for (row of responseIn) {
-    let updatedRecord = responseOut.find((rcrd) => rcrd.sku == row.sku);
+    let updatedRecord = responseOut.find((rcrd) => rcrd.SKU == row.SKU);
     // if out type inventory found then adjust the final quantity
     if (updatedRecord) {
       row.total = row.total - updatedRecord.total;

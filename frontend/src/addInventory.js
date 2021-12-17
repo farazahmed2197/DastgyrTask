@@ -1,28 +1,44 @@
 import React, { useState } from "react";
-import {
-  Form,
-  Input,
-  Button,
-  Radio,
-  Select,
-  Cascader,
-  DatePicker,
-  InputNumber,
-  TreeSelect,
-  Switch,
-} from "antd";
-import useBreakpoint from "antd/lib/grid/hooks/useBreakpoint";
+import { Form, Input, Button, Select, InputNumber, message } from "antd";
 
 export const AddInventory = () => {
   const [componentSize, setComponentSize] = useState("default");
+  const [form] = Form.useForm();
 
   const onFormLayoutChange = ({ size }) => {
     setComponentSize(size);
   };
 
+  const addInventoryInDb = () => {
+    const formValues = form.getFieldsValue();
+    const body = {
+      sku: formValues.sku,
+      quantity: formValues.quantity,
+      price: formValues.price,
+      type: formValues.type,
+    };
+    const requestOptions = {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    };
+    fetch("http://localhost:4000/inventory/add", requestOptions)
+      .then((response) => response.json())
+      .then((data) => {
+        console.log(data);
+        if (data.error) message.error(("Error: " , data.message));
+        else {
+          message.success("Inventory record added!");
+          form.resetFields();
+        }
+      })
+      .catch((error) => message.error("Something went wrong"));
+  };
+
   return (
     <div>
       <Form
+        form={form}
         labelCol={{
           span: 4,
         }}
@@ -36,16 +52,24 @@ export const AddInventory = () => {
         onValuesChange={onFormLayoutChange}
         size={componentSize}
       >
-        <Form.Item label="SKU">
+        <Form.Item label="SKU" name="sku" rules={[{ required: true }]}>
           <Input />
         </Form.Item>
-        <Form.Item label="Quantity">
+        <Form.Item
+          label="Quantity"
+          name="quantity"
+          rules={[{ required: true }, { type: "number" }]}
+        >
           <InputNumber />
         </Form.Item>
-        <Form.Item label="Price">
+        <Form.Item
+          label="Price"
+          name="price"
+          rules={[{ required: true }, { type: "number" }]}
+        >
           <InputNumber />
         </Form.Item>
-        <Form.Item label="Type">
+        <Form.Item label="Type" name="type" rules={[{ required: true }]}>
           <Select>
             <Select.Option value="purchase">Purchase</Select.Option>
             <Select.Option value="sales">Sales</Select.Option>
@@ -55,7 +79,13 @@ export const AddInventory = () => {
           </Select>
         </Form.Item>
       </Form>
-      <Button style={{"marginBottom": "10px"}} type="primary">Submit</Button>
+      <Button
+        style={{ marginBottom: "10px" }}
+        type="primary"
+        onClick={addInventoryInDb}
+      >
+        Submit
+      </Button>
     </div>
   );
 };

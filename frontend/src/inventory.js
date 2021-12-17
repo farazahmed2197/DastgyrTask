@@ -1,5 +1,5 @@
 import React from "react";
-import { Table, Button } from "antd";
+import { Table, Button,message } from "antd";
 import {AddInventory} from './addInventory'
 import "./App.css";
 
@@ -7,7 +7,7 @@ export default class InventoryTable extends React.Component {
   constructor(props) {
     super(props);
     this.outerColumns = [
-      { title: "SKU", dataIndex: "SKU", key: "SKU" },
+      { title: "Product SKU", dataIndex: "SKU", key: "SKU" },
       { title: "Total Quantity", dataIndex: "total", key: "total" },
     ];
 
@@ -44,16 +44,17 @@ export default class InventoryTable extends React.Component {
         },
         (error) => {
           console.log(error);
+          message.error("Server error in fetching Inventories")
         }
       );
   }
 
   toggleAddEnable(){
     this.setState({inventoryEnable: this.state.inventoryEnable ? false : true});
+    this.componentDidMount()
   }
 
   render() {
-    console.log("inner data:", this.state.innerData);
     return (
       <div>
         {!this.state.inventoryEnable && <Table
