@@ -27,4 +27,7 @@ I used sequelize ORM to fetch and add data in DB.
 
 ### 2. Frontend
 To run frontend goto the frontend directory and run npm i then npm start.
+There are two functionalites in front end.
+1. We can see the products SKU information, on expanding we can see all inventory transactions of each SKU.
+2. We can add inventory transaction, inventory in/out type will be detected based on selected reason in type field.
 
