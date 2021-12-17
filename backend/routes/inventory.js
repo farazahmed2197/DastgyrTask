@@ -60,7 +60,11 @@ router.post("/add", async (req, res) => {
 router.get("/get", async (req, res) => {
   try {
     let response = await getInventoryBySKU();
-
+    let allInventories = await Inventory.findAll();
+    // fetch all records of each SKUs
+    await response.forEach(async (inventory) => {
+      inventory.allRecords = await allInventories.filter((element) => element.SKU == inventory.SKU)
+    })
     return res.status(200).json(response);
   } catch (error) {
     return res.status(402).json({
@@ -143,10 +147,12 @@ const getInventory = async (data) => {
       // having["sku"] = "abc1";
       let response = await Inventory.findAll({
         attributes: [
-          "sku",
+          "SKU",
+          "createdAt",
+          "updatedAt",
           [sequelize.fn("SUM", sequelize.col("quantity")), "total"],
         ],
-        group: ["sku", "type"],
+        group: ["SKU", "type"],
         having,
         raw: true,
       });

@@ -1,10 +1,12 @@
 import React from 'react';
-import { Button } from 'antd';
-import './App.css';
+import NestedTable from './inventory'
+import './App.css'
 
 const App = () => (
   <div className="App">
-    <Button type="primary">Button</Button>
+    <h2> Inventory System </h2>
+    <h3> Dastgyr Task </h3>
+    <NestedTable />
   </div>
 );
 
